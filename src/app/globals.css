@@ -16,3 +16,16 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter);
 }
+
+.custom-transition {
+  transition: transform 0.18s, opacity 6s;
+  transition-timing-function: ease-in-out;
+}
+
+.custom-transition:hover {
+  transform: scale(1.05);
+}
+
+.custom-transition:active {
+  transform: scale(0.95);
+}

@@ -10,8 +10,9 @@ export default function Home() {
           alt="Pinewood One"
           width="500"
           height="500"
-          className="w-1/2 h-auto hover:scale-105 active:scale-95 transition-transform duration-300 ease-in-out cursor-pointer"
+          className="w-1/2 h-auto cursor-pointer custom-transition"
           onClick={logoOnClick}
+          id="logo"
         />
       </div>
       <div className="absolute top-0 left-0 w-full h-full z-[-1]">
@@ -38,6 +39,7 @@ function logoOnClick() {
     if (video) {
       const playPromise = video.play();
       video.style.opacity = "100";
+      document.getElementById("logo").style.opacity = "0";
 
       if (playPromise !== undefined) {
         playPromise
