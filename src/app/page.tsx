@@ -8,9 +8,12 @@ import {
   useScroll,
   useTransform,
   useMotionValueEvent,
+  easeIn,
+  useSpring,
 } from "framer-motion";
 import Lenis from "@studio-freight/lenis";
 import { Navbar } from "@/components/Navbar";
+import Logo from "@/components/Logo";
 
 // Import the 3D model with dynamic loading
 const Model3D = dynamic(
@@ -32,30 +35,62 @@ export default function Home() {
     offset: ["start start", "end end"],
   });
 
-  // Transform values based on scroll progress
-  const modelRotation = useTransform(scrollYProgress, [0, 1], [0, Math.PI * 2]);
-  const titleScale = useTransform(scrollYProgress, [0, 0.2], [1, 1.2]);
+  // Mask scale with direct scroll values and a smooth easing function
+  const maskScale = useTransform(
+    scrollYProgress, // Use direct scroll values instead of spring physics
+    [0, 0.015, 0.03, 0.045, 0.06, 0.08, 0.1], // Control points
+    [20, 12, 7, 3.5, 2, 1, 0.32], // Scale values
+    {
+      ease: (x) => {
+        // Custom easing function for smooth logarithmic-like curve
+        return 1 - Math.pow(1 - x, 3); // Cubic ease-out
+      },
+    }
+  );
+
+  // Update other transforms to use scrollYProgress directly
+  const videoOpacity = useTransform(scrollYProgress, [0.1, 0.101], [1, 0]);
+
+  const logoOpacity = useTransform(scrollYProgress, [0.15, 0.2], [1, 0]);
+
+  const videoBlur = useTransform(scrollYProgress, [0, 0.2], [4, 50], {
+    ease: easeIn,
+  });
+
+  // Other transforms should also use scrollYProgress directly
   const subtitleOpacity = useTransform(scrollYProgress, [0.1, 0.3], [0, 1]);
+
   const modelOpacity = useTransform(scrollYProgress, [0.4, 0.6], [0, 1]);
+
   const featureOpacity = useTransform(scrollYProgress, [0.7, 0.9], [0, 1]);
-  // Video background opacity that fades out as you scroll
-  const videoOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+
+  const modelRotation = useTransform(scrollYProgress, [0, 1], [0, Math.PI * 2]);
+
+  // Create a derived motion value for the CSS filter
+  const videoBlurFilter = useTransform(
+    videoBlur,
+    (value) => `blur(${value}px)`
+  );
 
   // Update model rotation based on scroll
   useMotionValueEvent(modelRotation, "change", (latest) => {
     setModelYRotation(latest);
   });
 
-  // Initialize Lenis smooth scrolling
+  // Initialize Lenis smooth scrolling with optimized settings
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
+      duration: 1.8, // Increase duration for smoother scrolling
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Exponential easing
       smoothWheel: true,
+      smoothTouch: false, // Disable for touch devices to prevent jitter
+      touchMultiplier: 1.5,
+      wheelMultiplier: 1.2, // Slightly increase wheel multiplier
+      lerp: 0.1, // Linear interpolation amount (lower = smoother)
     });
 
-    function raf(time: number) {
+    // Use requestAnimationFrame for smoother animation
+    function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
@@ -75,15 +110,19 @@ export default function Home() {
       {/* Navigation bar with scroll progress indicator */}
       <Navbar scrollProgress={scrollYProgress} />
 
-      {/* Video background that fades out when scrolling */}
+      {/* Video background that's masked by the SVG */}
       <motion.div
         style={{ opacity: videoOpacity }}
         className="fixed inset-0 w-full h-screen"
       >
         <VideoBackgroundPlayer
-          video_path={"/match_bg.mp4"}
+          video_path={
+            "https://hc-cdn.hel1.your-objectstorage.com/s/v3/72ea17d85fbec5f1bc3cc169b3f7fffdb500e8fe_websitecover.mp4"
+          }
           is_muted={true}
-          className={"blur-sm"}
+          mask_path="/PWR_UP.svg"
+          maskScale={maskScale}
+          blurAmount={videoBlurFilter} // Pass the filter string instead of just the number
         />
       </motion.div>
 
@@ -92,16 +131,7 @@ export default function Home() {
         id="about"
         className="h-screen w-full relative flex items-center justify-center"
       >
-        <motion.div style={{ scale: titleScale }} className="text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-white text-8xl font-extrabold tracking-tighter drop-shadow-[0_0_15px_rgba(0,0,0,0.7)]"
-          >
-            TEAM <span className="text-red-500">4765</span>
-          </motion.h1>
-        </motion.div>
+        <Logo opacity={logoOpacity} />
       </section>
 
       {/* Second section - Subtitle and intro */}
