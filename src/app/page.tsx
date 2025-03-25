@@ -66,10 +66,10 @@ export default function Home() {
   const modelRotation = useTransform(scrollYProgress, [0, 1], [0, Math.PI * 2]);
 
   // Create a derived motion value for the CSS filter
-  // const videoBlurFilter = useTransform(
-  //   videoBlur,
-  //   (value) => `blur(${value}px)`
-  // );
+  const videoBlurFilter = useTransform(
+    videoBlur,
+    (value) => `blur(${value}px)`
+  );
 
   // Update model rotation based on scroll
   useMotionValueEvent(modelRotation, "change", (latest) => {
@@ -120,7 +120,7 @@ export default function Home() {
           is_muted={true}
           mask_path="/PWR_UP.svg"
           maskScale={maskScale}
-          blurAmount={videoBlur} // Pass the original number MotionValue instead of the derived string
+          blurAmount={videoBlurFilter}
         />
       </motion.div>
 
