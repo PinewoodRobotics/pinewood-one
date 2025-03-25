@@ -9,7 +9,6 @@ import {
   useTransform,
   useMotionValueEvent,
   easeIn,
-  useSpring,
 } from "framer-motion";
 import Lenis from "@studio-freight/lenis";
 import { Navbar } from "@/components/Navbar";
@@ -83,14 +82,13 @@ export default function Home() {
       duration: 1.8, // Increase duration for smoother scrolling
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Exponential easing
       smoothWheel: true,
-      smoothTouch: false, // Disable for touch devices to prevent jitter
       touchMultiplier: 1.5,
       wheelMultiplier: 1.2, // Slightly increase wheel multiplier
       lerp: 0.1, // Linear interpolation amount (lower = smoother)
     });
 
     // Use requestAnimationFrame for smoother animation
-    function raf(time) {
+    function raf(time: number) {
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
@@ -122,7 +120,7 @@ export default function Home() {
           is_muted={true}
           mask_path="/PWR_UP.svg"
           maskScale={maskScale}
-          blurAmount={videoBlurFilter} // Pass the filter string instead of just the number
+          blurAmount={videoBlurFilter}
         />
       </motion.div>
 

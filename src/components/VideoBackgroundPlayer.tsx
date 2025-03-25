@@ -26,23 +26,23 @@ export function VideoBackgroundPlayer({
     // Apply the mask using CSS
     if (containerRef.current) {
       containerRef.current.style.maskImage = `url(${mask_path})`;
-      containerRef.current.style.WebkitMaskImage = `url(${mask_path})`;
+      // containerRef.current.style.WebkitMaskImage = `url(${mask_path})`;
       containerRef.current.style.maskRepeat = "no-repeat";
-      containerRef.current.style.WebkitMaskRepeat = "no-repeat";
+      // containerRef.current.style.WebkitMaskRepeat = "no-repeat";
       containerRef.current.style.maskPosition = "center";
-      containerRef.current.style.WebkitMaskPosition = "center";
+      // containerRef.current.style.WebkitMaskPosition = "center";
 
       // Set initial scale immediately
       if (typeof maskScale === "number") {
         const scalePercent = `${maskScale * 100}%`;
         containerRef.current.style.maskSize = scalePercent;
-        containerRef.current.style.WebkitMaskSize = scalePercent;
+        // containerRef.current.style.WebkitMaskSize = scalePercent;
       } else {
         // For MotionValue, get the current value
         const currentScale = maskScale.get();
         const scalePercent = `${currentScale * 100}%`;
         containerRef.current.style.maskSize = scalePercent;
-        containerRef.current.style.WebkitMaskSize = scalePercent;
+        // containerRef.current.style.WebkitMaskSize = scalePercent;
       }
     }
   }, [mask_path, maskScale]);
@@ -56,7 +56,7 @@ export function VideoBackgroundPlayer({
         // Calculate scale as percentage
         const scalePercent = `${scale * 100}%`;
         containerRef.current.style.maskSize = scalePercent;
-        containerRef.current.style.WebkitMaskSize = scalePercent;
+        // containerRef.current.style.WebkitMaskSize = scalePercent;
       }
     };
 
@@ -78,7 +78,7 @@ export function VideoBackgroundPlayer({
       {blurAmount && typeof blurAmount !== "number" ? (
         <motion.video
           style={{
-            filter: blurAmount, // This now receives the complete "blur(Xpx)" string
+            filter: blurAmount, // This now receives the MotionValue
           }}
           className="w-full h-full object-cover"
           src={video_path}
