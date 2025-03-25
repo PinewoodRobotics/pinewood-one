@@ -36,10 +36,12 @@ function logoOnClick() {
 
   if (clicks >= 13) {
     const video = document.getElementById("video") as HTMLVideoElement;
-    if (video) {
+    const logo = document.getElementById("logo");
+
+    if (video && logo) {
       const playPromise = video.play();
       video.style.opacity = "100";
-      document.getElementById("logo").style.opacity = "0";
+      logo.style.opacity = "0";
 
       if (playPromise !== undefined) {
         playPromise
