@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { MotionValue, motion } from "framer-motion";
+import { MotionValue, motion, useTransform } from "framer-motion";
 
 export function VideoBackgroundPlayer({
   video_path,
@@ -16,7 +16,7 @@ export function VideoBackgroundPlayer({
   is_muted: boolean;
   mask_path?: string;
   maskScale?: number | MotionValue<number>;
-  blurAmount?: number | MotionValue<number>;
+  blurAmount?: number | MotionValue<number> | MotionValue<string>;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +78,13 @@ export function VideoBackgroundPlayer({
       {blurAmount && typeof blurAmount !== "number" ? (
         <motion.video
           style={{
-            filter: blurAmount, // This now receives the MotionValue
+            filter:
+              typeof blurAmount.get() === "string"
+                ? blurAmount
+                : useTransform(
+                    blurAmount as MotionValue<number>,
+                    (value) => `blur(${value}px)`
+                  ),
           }}
           className="w-full h-full object-cover"
           src={video_path}

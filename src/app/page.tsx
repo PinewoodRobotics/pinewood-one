@@ -120,7 +120,7 @@ export default function Home() {
           is_muted={true}
           mask_path="/PWR_UP.svg"
           maskScale={maskScale}
-          blurAmount={videoBlurFilter}
+          blurAmount={videoBlur} // Pass the original number MotionValue instead of the derived string
         />
       </motion.div>
 
