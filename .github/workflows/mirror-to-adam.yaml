@@ -15,6 +15,5 @@ jobs:
         env:
           TOKEN: ${{ secrets.ADAM_GH_PAT }}
         run: |
-          git remote set-url personal https://x-access-token:${TOKEN}@github.com/AdamEXu/pinewood-one.git || \
           git remote add personal https://x-access-token:${TOKEN}@github.com/AdamEXu/pinewood-one.git
           git push personal main --force
