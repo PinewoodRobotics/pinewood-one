@@ -1,0 +1,19 @@
+# .github/workflows/mirror-to-personal.yml
+name: Mirror to Adam Personal Repo
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Push to personal repo
+        env:
+          TOKEN: ${{ secrets.ADAM_GH_PAT }}
+        run: |
+          git remote add personal https://$TOKEN@github.com/AdamEXu/pinewood-one.git
+          git push personal main --force
