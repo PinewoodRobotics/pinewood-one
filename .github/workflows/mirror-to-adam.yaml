@@ -15,6 +15,15 @@ jobs:
         env:
           TOKEN: ${{ secrets.ADAM_GH_PAT }}
         run: |
-          curl -s -H "Authorization: token ${TOKEN}" https://api.github.com/user
-          git remote add personal https://$TOKEN@github.com/AdamEXu/pinewood-one.git
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          # Clone the org repo manually (DON'T use actions/checkout)
+          git clone https://github.com/PinewoodRobotics/pinewood-one.git source
+          cd source
+
+          # Add your personal repo as a new remote
+          git remote add personal https://x-access-token:${TOKEN}@github.com/AdamEXu/pinewood-one.git
+
+          # Push just main branch (or --mirror if you prefer)
           git push personal main --force
