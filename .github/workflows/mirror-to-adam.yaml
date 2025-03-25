@@ -16,4 +16,11 @@ jobs:
           TOKEN: ${{ secrets.ADAM_GH_PAT }}
         run: |
           git remote add personal https://x-access-token:${TOKEN}@github.com/AdamEXu/pinewood-one.git
+          git remote -v
+          if [ -z "$TOKEN" ]; then
+            echo "❌ TOKEN is empty"
+            exit 1
+          else
+            echo "✅ TOKEN is set (length: ${#TOKEN})"
+          fi
           git push personal main --force
