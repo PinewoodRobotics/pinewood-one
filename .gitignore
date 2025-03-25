@@ -40,4 +40,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/public/match_bg.mp4
+.github/workflows/mirror-to-adam.yaml
