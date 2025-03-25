@@ -20,6 +20,20 @@ export function VideoBackgroundPlayer({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Create a dummy motion value to use when blurAmount is not a MotionValue<number>
+  const dummyMotionValue = useRef(new MotionValue(0));
+
+  // Always call useTransform, but use either the real blurAmount or the dummy value
+  const blurFilter = useTransform(
+    // If blurAmount is a MotionValue<number>, use it; otherwise use the dummy
+    blurAmount &&
+      typeof blurAmount !== "number" &&
+      typeof blurAmount.get() !== "string"
+      ? (blurAmount as MotionValue<number>)
+      : dummyMotionValue.current,
+    (value) => `blur(${value}px)`
+  );
+
   useEffect(() => {
     if (!mask_path) return;
 
@@ -79,12 +93,7 @@ export function VideoBackgroundPlayer({
         <motion.video
           style={{
             filter:
-              typeof blurAmount.get() === "string"
-                ? blurAmount
-                : useTransform(
-                    blurAmount as MotionValue<number>,
-                    (value) => `blur(${value}px)`
-                  ),
+              typeof blurAmount.get() === "string" ? blurAmount : blurFilter,
           }}
           className="w-full h-full object-cover"
           src={video_path}
