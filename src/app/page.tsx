@@ -1,57 +1,80 @@
 "use client";
-import Image from "next/image";
+import ModelViewer from "@/components/ModelViewer";
+import Navbar from "@/components/Navbar";
+import { useEffect } from "react";
+import Lenis from "@studio-freight/lenis";
 
 export default function Home() {
-  return (
-    <div>
-      <div className="flex justify-center items-center h-screen z-10">
-        <Image
-          src="/pwone.png"
-          alt="Pinewood One"
-          width="500"
-          height="500"
-          className="w-1/2 h-auto cursor-pointer custom-transition"
-          onClick={logoOnClick}
-          id="logo"
-        />
-      </div>
-      <div className="absolute top-0 left-0 w-full h-full z-[-1]">
-        <video
-          loop
-          playsInline
-          className="w-full h-full object-cover opacity-0"
-          src="https://cdn.hackclubber.dev/slackcdn/3342a21636498dd66c6e423e694eb841.mp4"
-          id="video"
-        />
-      </div>
-    </div>
-  );
-}
+  // Initialize smooth scrolling with Lenis
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+    });
 
-let clicks = 0;
-
-function logoOnClick() {
-  clicks++;
-  document.body.style.backgroundColor = `rgba(0, 0, 0, ${clicks * 0.08})`;
-
-  if (clicks >= 13) {
-    const video = document.getElementById("video") as HTMLVideoElement;
-    const logo = document.getElementById("logo");
-
-    if (video && logo) {
-      const playPromise = video.play();
-      video.style.opacity = "100";
-      logo.style.opacity = "0";
-
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log("Video playing successfully");
-          })
-          .catch((error) => {
-            console.error("Error playing video:", error);
-          });
-      }
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
     }
-  }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
+
+  return (
+    <main className="min-h-screen overflow-hidden">
+      {/* Fixed background - stays in place regardless of scroll */}
+      <div className="fixed inset-0 z-0">
+        <ModelViewer
+          modelUrl="https://cdn.hack.ngo/slackcdn/49b45bdf52354530217dcaf19ae77b06.stl"
+          cameraPosition={[-20, 3, 10]}
+          cameraDistance={3}
+        />
+      </div>
+
+      {/* Navbar with high z-index to stay on top */}
+      <Navbar />
+
+      {/* Scrollable content */}
+      <div className="relative z-10 py-20">
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+        <h1 className="text-3xl font-bold text-center">text</h1>
+      </div>
+    </main>
+  );
 }
