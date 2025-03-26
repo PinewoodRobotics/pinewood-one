@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -62,13 +63,15 @@ export default function Navbar() {
       variants={navVariants}
     >
       <div className="flex justify-between items-center p-4">
-        <motion.div
-          className="text-2xl font-bold"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Pinewood One
-        </motion.div>
+        <a href="#">
+          <motion.div
+            className="text-2xl font-bold z-10 cursor-pointer"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Image src="/PWRUP_text.svg" alt="Logo" width={100} height={100} />
+          </motion.div>
+        </a>
 
         {/* Desktop Navigation */}
         {!isMobile && (
@@ -77,7 +80,7 @@ export default function Navbar() {
               <motion.a
                 key={item}
                 href={`#${item.toLowerCase()}`}
-                className="hover:text-blue-400 transition-colors"
+                className="hover:text-[#70cd35] transition-colors" // Using the lime color directly
                 variants={linkVariants}
                 custom={i}
                 whileHover={{ scale: 1.1 }}
@@ -95,21 +98,28 @@ export default function Navbar() {
             className="p-2 focus:outline-none"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             whileTap={{ scale: 0.9 }}
+            animate={{
+              x: isMenuOpen ? 10 : 0,
+            }}
+            transition={{ duration: 0.3 }}
           >
             <div
-              className="w-6 h-0.5 bg-white mb-1.5 transition-all duration-300"
+              className="w-6 h-0.5 bg-white mb-1.5 transition-all duration-300" // Lime color for hamburger
               style={{
-                transform: isMenuOpen ? "rotate(45deg) translateY(6px)" : "",
+                transform: isMenuOpen ? "rotate(45deg) translateY(11px)" : "",
               }}
             />
             <div
-              className="w-6 h-0.5 bg-white mb-1.5 transition-all duration-300"
-              style={{ opacity: isMenuOpen ? 0 : 1 }}
+              className="w-6 h-0.5 bg-white mb-1.5 transition-all duration-300" // Lime color for hamburger
+              style={{
+                opacity: isMenuOpen ? 0 : 1,
+                translateX: isMenuOpen ? 10 : 0,
+              }}
             />
             <div
-              className="w-6 h-0.5 bg-white transition-all duration-300"
+              className="w-6 h-0.5 bg-white transition-all duration-300" // Lime color for hamburger
               style={{
-                transform: isMenuOpen ? "rotate(-45deg) translateY(-6px)" : "",
+                transform: isMenuOpen ? "rotate(-45deg) translateY(-11px)" : "",
               }}
             />
           </motion.button>
@@ -135,7 +145,7 @@ export default function Navbar() {
               <motion.a
                 key={item}
                 href={`#${item.toLowerCase()}`}
-                className="block py-2 hover:text-blue-400 transition-colors"
+                className="block py-2 hover:text-[#70cd35] transition-colors" // Lime color on hover
                 onClick={() => setIsMenuOpen(false)}
                 whileHover={{ x: 10 }}
                 whileTap={{ scale: 0.95 }}

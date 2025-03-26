@@ -1,5 +1,5 @@
 "use client";
-import { Canvas, useLoader, useFrame } from "@react-three/fiber";
+import { Canvas, useLoader, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
@@ -10,30 +10,35 @@ import {
   PerspectiveCamera as ThreePerspectiveCamera,
 } from "three";
 
-function Model({ url }: { url: string }) {
+function Model({
+  url,
+  scrollProgress = 0,
+  keyframeValues,
+}: {
+  url: string;
+  scrollProgress?: number;
+  keyframeValues?: number[];
+}) {
   const meshRef = useRef<Mesh>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [scale, setScale] = useState(0.01);
   const [rotation, setRotation] = useState(0);
   const animationComplete = useRef(false);
   const animationProgress = useRef(0);
+  const finalAnimationRotation = useRef(0);
+
+  // Get initial position from first keyframe if available
+  const initialPosition =
+    keyframeValues && keyframeValues.length >= 3
+      ? [keyframeValues[0], keyframeValues[1], keyframeValues[2]]
+      : [0, -0.5, 0];
 
   // Animation constants
-  const targetScale = 1;
+  const targetScale = 3;
   const targetRotation = Math.PI * 2; // 360 degrees
   const animationDuration = 120; // frames
 
-  const geometry = useLoader(
-    STLLoader,
-    url,
-    () => {
-      console.log("STL loader initialized");
-    },
-    (error) => {
-      console.warn("Non-fatal STL loading issue:", error);
-      return null;
-    }
-  );
+  const geometry = useLoader(STLLoader, url);
 
   useEffect(() => {
     console.log("STL geometry loaded successfully");
@@ -60,10 +65,12 @@ function Model({ url }: { url: string }) {
       setScale(0.01 + (targetScale - 0.01) * easedProgress);
 
       // Update rotation with easing
-      setRotation(targetRotation * easedProgress);
+      const currentRotation = targetRotation * easedProgress;
+      setRotation(currentRotation);
 
-      // Check if animation is complete
+      // Store the final rotation when animation completes
       if (animationProgress.current >= 1) {
+        finalAnimationRotation.current = currentRotation;
         animationComplete.current = true;
       }
     }
@@ -77,13 +84,42 @@ function Model({ url }: { url: string }) {
     flatShading: false,
   });
 
+  // Calculate model position based on keyframe values
+  let modelPosition = initialPosition;
+
+  // Initialize model rotation
+  let modelRotation = [-Math.PI / 2, 0, rotation];
+
+  // After animation completes, use keyframe values for position and rotation if available
+  if (
+    animationComplete.current &&
+    keyframeValues &&
+    keyframeValues.length >= 6
+  ) {
+    // Use keyframe values directly for position
+    modelPosition = [keyframeValues[0], keyframeValues[1], keyframeValues[2]];
+
+    modelRotation = [
+      -Math.PI / 2 + keyframeValues[3],
+      keyframeValues[4],
+      finalAnimationRotation.current + keyframeValues[5],
+    ];
+  } else if (animationComplete.current) {
+    // Use scroll-based rotation only
+    modelRotation = [
+      -Math.PI / 2,
+      0,
+      finalAnimationRotation.current + scrollProgress * Math.PI,
+    ];
+  }
+
   return (
     <mesh
       ref={meshRef}
       geometry={geometry}
       material={material}
-      rotation={[-Math.PI / 2, 0, rotation]} // Y-axis rotation is applied to Z in this orientation
-      position={[0, -0.5, 0]}
+      rotation={modelRotation}
+      position={modelPosition}
       scale={scale}
       castShadow
       receiveShadow
@@ -95,51 +131,25 @@ interface ModelViewerProps {
   modelUrl: string;
   cameraPosition?: [number, number, number];
   cameraDistance?: number;
+  scrollProgress?: number;
+  keyframeValues?: number[];
 }
 
 export default function ModelViewer({
   modelUrl,
   cameraPosition = [-20, 3, 10],
-  cameraDistance,
+  cameraDistance = 3,
+  scrollProgress = 0,
+  keyframeValues,
 }: ModelViewerProps) {
-  const cameraRef = useRef<ThreePerspectiveCamera>(null);
-  const [isReady, setIsReady] = useState(false);
-  const initialPositionRef = useRef(cameraPosition);
-
-  // Pre-calculate the correct camera position before rendering
-  useEffect(() => {
-    if (cameraDistance) {
-      const direction = new Vector3(
-        cameraPosition[0],
-        cameraPosition[1],
-        cameraPosition[2]
-      ).normalize();
-
-      const newPosition: [number, number, number] = [
-        direction.x * cameraDistance,
-        direction.y * cameraDistance,
-        direction.z * cameraDistance,
-      ];
-
-      initialPositionRef.current = newPosition;
-      setIsReady(true);
-    } else {
-      setIsReady(true);
-    }
-  }, [cameraPosition, cameraDistance]);
-
-  // If not ready, show a loading state or nothing
-  if (!isReady) {
-    return <div className="w-full h-full bg-black" />;
-  }
-
   return (
     <Canvas shadows>
+      {/* Fixed camera position */}
       <PerspectiveCamera
-        ref={cameraRef}
         makeDefault
-        position={initialPositionRef.current}
+        position={cameraPosition}
         fov={40}
+        zoom={cameraDistance}
       />
 
       {/* Lights */}
@@ -155,8 +165,14 @@ export default function ModelViewer({
       <pointLight position={[0, 5, -5]} intensity={0.5} color="#ffffff" />
 
       <Suspense fallback={null}>
-        <Model url={modelUrl} />
+        <Model
+          url={modelUrl}
+          scrollProgress={scrollProgress}
+          keyframeValues={keyframeValues}
+        />
       </Suspense>
+
+      {/* Disable controls to prevent any interference */}
       <OrbitControls
         enableRotate={false}
         enableZoom={false}
