@@ -113,7 +113,7 @@ export default function Navbar() {
               className="w-6 h-0.5 bg-white mb-1.5 transition-all duration-300" // Lime color for hamburger
               style={{
                 opacity: isMenuOpen ? 0 : 1,
-                translateX: isMenuOpen ? 10 : 0,
+                transform: isMenuOpen ? "translateX(10px)" : "translateX(0)",
               }}
             />
             <div

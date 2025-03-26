@@ -1,14 +1,9 @@
 "use client";
-import { Canvas, useLoader, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useLoader, useFrame } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
-import {
-  MeshStandardMaterial,
-  Vector3,
-  Mesh,
-  PerspectiveCamera as ThreePerspectiveCamera,
-} from "three";
+import { MeshStandardMaterial, Mesh } from "three";
 
 function Model({
   url,
@@ -85,10 +80,14 @@ function Model({
   });
 
   // Calculate model position based on keyframe values
-  let modelPosition = initialPosition;
+  let modelPosition: [number, number, number] = initialPosition as [
+    number,
+    number,
+    number
+  ];
 
   // Initialize model rotation
-  let modelRotation = [-Math.PI / 2, 0, rotation];
+  let modelRotation: [number, number, number] = [-Math.PI / 2, 0, rotation];
 
   // After animation completes, use keyframe values for position and rotation if available
   if (
@@ -97,20 +96,24 @@ function Model({
     keyframeValues.length >= 6
   ) {
     // Use keyframe values directly for position
-    modelPosition = [keyframeValues[0], keyframeValues[1], keyframeValues[2]];
+    modelPosition = [
+      keyframeValues[0],
+      keyframeValues[1],
+      keyframeValues[2],
+    ] as [number, number, number];
 
     modelRotation = [
       -Math.PI / 2 + keyframeValues[3],
       keyframeValues[4],
       finalAnimationRotation.current + keyframeValues[5],
-    ];
+    ] as [number, number, number];
   } else if (animationComplete.current) {
     // Use scroll-based rotation only
     modelRotation = [
       -Math.PI / 2,
       0,
       finalAnimationRotation.current + scrollProgress * Math.PI,
-    ];
+    ] as [number, number, number];
   }
 
   return (

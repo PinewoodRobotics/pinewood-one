@@ -9,9 +9,13 @@ import Box from "@/components/Box";
 
 // Define keyframes for scroll-based animation
 // Format: [positionX, positionY, positionZ, rotationX, rotationY, rotationZ]
-let scrollKeyFrames = {
+type KeyframePoint = 0 | 0.5 | 1;
+type KeyframeValues = [number, number, number, number, number, number];
+
+const scrollKeyFrames: Record<KeyframePoint, KeyframeValues> = {
   0: [0, -2, 0, 0, 0, 0], // Starting position (top of page)
-  1: [0, 10, 0, 0, 0, 0], // Ending position (bottom of page)
+  0.5: [0, -2, 0, 0, Math.PI, 0], // Middle of page - add rotation around Y axis
+  1: [0, -2, 0, 0, Math.PI * 2, 0], // Ending position (bottom of page) - complete rotation
 };
 
 // Helper function to interpolate between keyframes
@@ -30,8 +34,8 @@ function interpolateKeyframes(progress: number) {
     }
   }
 
-  const startKey = keyPoints[startIndex];
-  const endKey = keyPoints[startIndex + 1];
+  const startKey = keyPoints[startIndex] as KeyframePoint;
+  const endKey = keyPoints[startIndex + 1] as KeyframePoint;
 
   // If we're at the exact keyframe, return that keyframe's values
   if (progress === startKey) return scrollKeyFrames[startKey];
@@ -154,11 +158,19 @@ export default function Home() {
             title="About"
             description="This is the about section."
             color="#56B97F"
+            num={1}
           />
-          <Box title="Team" description="Meet our talented team members." />
+          <Box
+            title="Team"
+            description="Meet our talented team members."
+            color="#3478C6"
+            num={2}
+          />
           <Box
             title="Sponsors"
             description="Learn about our amazing sponsors."
+            color="#F2994A"
+            num={3}
           />
         </div>
         {/* <div className="w-screen h-screen flex flex-col justify-center items-center">
