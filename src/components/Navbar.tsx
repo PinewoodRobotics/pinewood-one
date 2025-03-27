@@ -1,13 +1,35 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLinksDropdownOpen, setIsLinksDropdownOpen] = useState(false);
+  const linksDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Use a ref to track if we're in the process of scrolling
+  const isScrollingRef = useRef(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        linksDropdownRef.current &&
+        !linksDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLinksDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Check if device is mobile and handle scroll events
   useEffect(() => {
@@ -17,17 +39,75 @@ export default function Navbar() {
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+
+      // Update scroll percentage for debug display
+      const scrollElement = document.getElementById("scrollPercentage");
+      if (scrollElement) {
+        const scrollHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+        const scrollProgress =
+          scrollHeight > 0
+            ? (window.scrollY / scrollHeight).toFixed(3)
+            : "0.000";
+        scrollElement.textContent = scrollProgress;
+      }
     };
 
     checkMobile();
-    window.addEventListener("resize", checkMobile);
     window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", checkMobile);
+
+    // Initial check
+    handleScroll();
 
     return () => {
-      window.removeEventListener("resize", checkMobile);
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", checkMobile);
     };
-  }, []);
+  }, []); // Empty dependency array to run only once on mount
+
+  // Function to handle smooth scrolling
+  const handleSmoothScroll = (id: string) => {
+    // Prevent recursive calls
+    if (isScrollingRef.current) return;
+    isScrollingRef.current = true;
+
+    console.log("Attempting to scroll to:", id);
+
+    // For scrolling to top
+    if (id === "") {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+      setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 100);
+      return;
+    }
+
+    // For scrolling to sections
+    const element = document.getElementById(id);
+    console.log("Found element:", element);
+
+    if (element) {
+      const targetPosition =
+        element.getBoundingClientRect().top + window.scrollY;
+      console.log("Scrolling to position:", targetPosition);
+
+      window.scrollTo({
+        top: targetPosition,
+        behavior: "smooth",
+      });
+    } else {
+      console.error("Element not found:", id);
+    }
+
+    // Reset the scrolling flag after a short delay
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 100);
+  };
 
   // Animation variants
   const navVariants = {
@@ -53,8 +133,10 @@ export default function Navbar() {
     <motion.nav
       className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300`}
       style={{
-        backdropFilter: scrolled ? "blur(8px)" : "blur(0px)",
-        WebkitBackdropFilter: scrolled ? "blur(8px)" : "blur(0px)",
+        backdropFilter:
+          scrolled || (isMobile && isMenuOpen) ? "blur(8px)" : "blur(0px)",
+        WebkitBackdropFilter:
+          scrolled || (isMobile && isMenuOpen) ? "blur(8px)" : "blur(0px)",
         transition:
           "backdrop-filter 0.2s ease-in-out, -webkit-backdrop-filter 0.2s ease-in-out",
       }}
@@ -63,7 +145,13 @@ export default function Navbar() {
       variants={navVariants}
     >
       <div className="flex justify-between items-center p-4">
-        <a href="#">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            handleSmoothScroll("");
+          }}
+        >
           <motion.div
             className="text-2xl font-bold z-10 cursor-pointer"
             whileHover={{ scale: 1.05 }}
@@ -75,27 +163,117 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         {!isMobile && (
-          <div className="space-x-6">
-            {["About", "Team", "Sponsors"].map((item, i) => (
+          <div className="space-x-6 flex items-center">
+            {/* Internal navigation links */}
+            {[
+              { id: "features", text: "Features" },
+              { id: "about", text: "About" },
+            ].map((item, i) => (
               <motion.a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="hover:text-[#70cd35] transition-colors" // Using the lime color directly
+                key={item.text}
+                href={`#${item.id}`}
+                className="hover:text-[#70cd35] transition-colors"
                 variants={linkVariants}
                 custom={i}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSmoothScroll(item.id);
+                }}
               >
-                {item}
+                {item.text}
               </motion.a>
             ))}
+
+            {/* Links Dropdown */}
+            <div className="relative" ref={linksDropdownRef}>
+              <motion.button
+                className="flex items-center hover:text-[#70cd35] transition-colors"
+                onClick={() => setIsLinksDropdownOpen(!isLinksDropdownOpen)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                variants={linkVariants}
+                custom={2}
+              >
+                Links
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`ml-1 h-4 w-4 transition-transform ${
+                    isLinksDropdownOpen ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </motion.button>
+
+              {/* // <motion.a
+              //   href="#"
+              //   className="hover:text-[#70cd35] transition-colors"
+              //   variants={linkVariants}
+              //   custom={3}
+              //   whileHover={{ scale: 1.1 }}
+              //   whileTap={{ scale: 0.95 }}
+              //   id="debug"
+              // >
+              //   Scrolled: <span id="scrollPercentage">0.000</span>/1
+              // </motion.a> */}
+
+              <AnimatePresence>
+                {isLinksDropdownOpen && (
+                  <motion.div
+                    className="absolute right-0 mt-2 w-48 bg-black/90 backdrop-blur-md rounded-md shadow-lg py-1 z-50"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    style={{
+                      borderTop: "2px solid #70cd35",
+                    }}
+                  >
+                    <a
+                      href="https://github.com/pinewoodrobotics"
+                      className="block px-4 py-2 hover:bg-black/50 hover:text-[#70cd35] transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      GitHub
+                    </a>
+                    <a
+                      href="https://www.thebluealliance.com/team/4765"
+                      className="block px-4 py-2 hover:bg-black/50 hover:text-[#70cd35] transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      The Blue Alliance
+                    </a>
+                    <a
+                      href="https://www.youtube.com/@pinewoodrobotics"
+                      className="block px-4 py-2 hover:bg-black/50 hover:text-[#70cd35] transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      YouTube
+                    </a>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         )}
 
         {/* Mobile Menu Button */}
         {isMobile && (
           <motion.button
-            className="p-2 focus:outline-none"
+            className="p-2 focus:outline-none cursor-pointer"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             whileTap={{ scale: 0.9 }}
             animate={{
@@ -135,27 +313,96 @@ export default function Navbar() {
           variants={mobileMenuVariants}
         >
           <div
-            className="flex flex-col space-y-4 bg-black/70 p-4 rounded-lg"
+            className="flex flex-col bg-black/70 p-4 rounded-lg"
             style={{
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
             }}
           >
-            {["About", "Team", "Sponsors"].map((item, i) => (
+            <div className="flex flex-col space-y-1 items-end">
               <motion.a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="block py-2 hover:text-[#70cd35] transition-colors" // Lime color on hover
-                onClick={() => setIsMenuOpen(false)}
-                whileHover={{ x: 10 }}
+                href="#features"
+                className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log("Mobile Features clicked");
+                  handleSmoothScroll("features");
+                  setIsMenuOpen(false);
+                }}
+                whileHover={{ x: -10 }}
                 whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * i }}
+                transition={{ duration: 0.2 }}
               >
-                {item}
+                Features
               </motion.a>
-            ))}
+              <motion.a
+                href="#about"
+                className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log("Mobile About clicked");
+                  handleSmoothScroll("about");
+                  setIsMenuOpen(false);
+                }}
+                whileHover={{ x: -10 }}
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                About
+              </motion.a>
+            </div>
+
+            {/* External Links Section */}
+            <div className="mt-3 pt-2 border-t border-gray-700 w-full">
+              <h3 className="text-[#70cd35] mb-1 font-bold text-lg text-right">
+                Links
+              </h3>
+              <div className="flex flex-col space-y-1 items-end">
+                <motion.a
+                  href="https://github.com/pinewoodrobotics"
+                  className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ x: -10 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  GitHub
+                </motion.a>
+                <motion.a
+                  href="https://www.thebluealliance.com/team/4765"
+                  className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ x: -10 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  The Blue Alliance
+                </motion.a>
+                <motion.a
+                  href="https://www.youtube.com/@pinewoodrobotics"
+                  className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ x: -10 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  YouTube
+                </motion.a>
+              </div>
+            </div>
           </div>
         </motion.div>
       )}

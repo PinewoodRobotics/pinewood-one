@@ -3,8 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "One",
-  description: "Pinewood One",
+  title: "PWRUP 4765",
+  description:
+    "We are FRC team 4765: PWRUP from Pinewood School in Los Altos, CA.",
 };
 
 const inter = Inter({ subsets: ["latin"] });

@@ -9,16 +9,46 @@ import Box from "@/components/Box";
 
 // Define keyframes for scroll-based animation
 // Format: [positionX, positionY, positionZ, rotationX, rotationY, rotationZ]
-type KeyframePoint = 0 | 0.5 | 1;
 type KeyframeValues = [number, number, number, number, number, number];
 
-const scrollKeyFrames: Record<KeyframePoint, KeyframeValues> = {
-  0: [0, -2, 0, 0, 0, 0], // Starting position (top of page)
-  0.5: [0, -2, 0, 0, Math.PI, 0], // Middle of page - add rotation around Y axis
-  1: [0, -2, 0, 0, Math.PI * 2, 0], // Ending position (bottom of page) - complete rotation
+// Add easing type to each keyframe
+type KeyframeWithEasing = {
+  values: KeyframeValues;
+  easing?: "linear" | "easeInOut" | "easeIn" | "easeOut";
 };
 
-// Helper function to interpolate between keyframes
+// Updated keyframes structure with easing options
+const scrollKeyFrames: Record<number, KeyframeWithEasing> = {
+  0: {
+    values: [0, -2, 0, 0, 0, Math.PI / 2 - 0.7],
+    easing: "linear",
+  },
+  0.385: {
+    values: [1.3, -0.4, 30, 0.3, 0, Math.PI * 0.25 + 0.6],
+    easing: "easeInOut",
+  },
+  0.74: {
+    values: [0, -1, 20, 0.5, 0, Math.PI / 2 + 0.3],
+    easing: "easeInOut",
+  },
+  1: {
+    values: [0, -2, 0, 0, 0, Math.PI / 2 - 0.7],
+    easing: "easeOut",
+  },
+};
+
+// Easing functions
+const easingFunctions = {
+  linear: (t: number) => t,
+  easeIn: (t: number) => t * t * t, // Cubic easing for stronger effect
+  easeOut: (t: number) => 1 - Math.pow(1 - t, 3), // Cubic easing out
+  easeInOut: (t: number) => {
+    // More pronounced easeInOut function
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  },
+};
+
+// Helper function to interpolate between keyframes with easing
 function interpolateKeyframes(progress: number) {
   // Find the two keyframes to interpolate between
   const keyPoints = Object.keys(scrollKeyFrames)
@@ -34,29 +64,50 @@ function interpolateKeyframes(progress: number) {
     }
   }
 
-  const startKey = keyPoints[startIndex] as KeyframePoint;
-  const endKey = keyPoints[startIndex + 1] as KeyframePoint;
+  const startKey = keyPoints[startIndex];
+  const endKey = keyPoints[startIndex + 1];
 
   // If we're at the exact keyframe, return that keyframe's values
-  if (progress === startKey) return scrollKeyFrames[startKey];
-  if (progress === endKey) return scrollKeyFrames[endKey];
+  if (progress === startKey) return scrollKeyFrames[startKey].values;
+  if (progress === endKey) return scrollKeyFrames[endKey].values;
 
   // Calculate how far we are between the two keyframes (0 to 1)
   const segmentProgress = (progress - startKey) / (endKey - startKey);
 
-  // Interpolate between the two keyframes
-  const startValues = scrollKeyFrames[startKey];
-  const endValues = scrollKeyFrames[endKey];
+  // Get the easing function (default to linear if not specified)
+  const easingType = scrollKeyFrames[startKey].easing || "linear";
+  const easingFunction = easingFunctions[easingType];
 
-  // Linear interpolation between each value
+  // Apply easing to the progress
+  const easedProgress = easingFunction(segmentProgress);
+
+  // Interpolate between the two keyframes
+  const startValues = scrollKeyFrames[startKey].values;
+  const endValues = scrollKeyFrames[endKey].values;
+
+  // Linear interpolation between each value with easing applied
   return startValues.map((start, i) => {
-    return start + (endValues[i] - start) * segmentProgress;
+    return start + (endValues[i] - start) * easedProgress;
   });
 }
 
 export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [keyframeValues, setKeyframeValues] = useState<number[]>([]);
+  const [modelLoaded, setModelLoaded] = useState(false);
+
+  // Function to handle model load completion
+  const handleModelLoaded = () => {
+    setModelLoaded(true);
+    // Remove loading screen when model is loaded
+    const loadingElement = document.getElementById("loading");
+    if (loadingElement) {
+      loadingElement.style.opacity = "0";
+      setTimeout(() => {
+        loadingElement.style.display = "none";
+      }, 500);
+    }
+  };
 
   // Initialize smooth scrolling with Lenis
   useEffect(() => {
@@ -68,6 +119,32 @@ export default function Home() {
       smoothWheel: true,
       wheelMultiplier: 1,
       touchMultiplier: 2,
+    });
+
+    // Handle anchor links for smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener(
+        "click",
+        function (this: HTMLAnchorElement, e: Event) {
+          e.preventDefault();
+          const href = this.getAttribute("href");
+
+          // Special case for "#" (top of page)
+          if (href === "#") {
+            lenis.scrollTo(0);
+            return;
+          }
+
+          // For all other anchor links
+          const targetId = href?.substring(1);
+          if (targetId) {
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+              lenis.scrollTo(targetElement);
+            }
+          }
+        }
+      );
     });
 
     function raf(time: number) {
@@ -99,14 +176,27 @@ export default function Home() {
 
   return (
     <main className="min-h-screen overflow-hidden">
+      <div
+        id="loading"
+        className="fixed inset-0 z-51 flex flex-col gap-4 items-center justify-center bg-black text-white text-2xl w-screen h-screen top-0 left-0 right-0 bottom-0 transition-opacity duration-500"
+      >
+        <p className="text-4xl text-[#70cd35] font-bold">
+          Loading<span id="loadingDots">...</span>
+        </p>
+        <p className="text-2xl text-white" id="percentLoaded">
+          <span id="percentLoadedValue">0</span>% loaded
+        </p>
+      </div>
+
       {/* Fixed background - stays in place regardless of scroll */}
       <div className="fixed inset-0 z-0">
         <ModelViewer
           modelUrl="https://cdn.hack.ngo/slackcdn/49b45bdf52354530217dcaf19ae77b06.stl"
-          cameraPosition={[-20, 3, 10]}
-          cameraDistance={2.5} // Reduced from 3 to 1.5 to make the model appear larger
+          cameraPosition={[0, 0, 40]} // Move camera back to z=10
+          cameraDistance={5} // Increased from 2.5 to 5 to make the model appear smaller/further away
           scrollProgress={scrollProgress}
           keyframeValues={keyframeValues}
+          onLoaded={handleModelLoaded}
         />
       </div>
 
@@ -115,14 +205,14 @@ export default function Home() {
 
       {/* Scrollable content */}
       <div className="relative py-20 text-center w-screen flex flex-col justify-center items-center">
-        <div className="h-screen w-screen flex flex-col">
+        <div className="h-[89vh] w-screen flex flex-col">
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: modelLoaded ? 1 : 0 }}
             transition={{
               duration: 0.75,
               ease: "easeInOut",
-              delay: 0.75,
+              delay: modelLoaded ? 0.5 : 0,
             }}
             className="z-[-100] mx-10 h-[500px] flex items-center justify-center -mb-130"
           >
@@ -130,11 +220,11 @@ export default function Home() {
           </motion.div>
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: modelLoaded ? 1 : 0 }}
             transition={{
               duration: 0.5,
               ease: "easeInOut",
-              delay: 1,
+              delay: modelLoaded ? 0.75 : 0,
             }}
             className="z-[-100] -mt-18 h-[300px] flex items-center justify-center"
           >
@@ -153,29 +243,75 @@ export default function Home() {
           </a>{" "}
           in Los Altos, California.
         </h1>
-        <div className="w-screen py-16 flex flex-row justify-center items-center gap-8">
+        <h2 className="text-2xl text-white z-10 mt-8" id="features">
+          Here&apos;s a quick overview of the features of our robot:
+        </h2>
+        <div className="w-screen h-screen flex justify-center items-center text-align-left">
+          <div className="w-1/2 text-align-left mr-[50%]">
+            <h2
+              className="text-align-left text-2xl md:text-6xl font-bold text-white z-10 ml-[5%] mb-2"
+              style={{ textAlign: "left" }}
+            >
+              Vision Subsystem
+            </h2>
+            <p
+              className="text-align-left text-lg md:text-2xl text-white z-10 ml-[5%]"
+              style={{ textAlign: "left" }}
+            >
+              With 4 cameras and LiDAR, our robot is fully equipped with
+              high-tech vision capabilities, allowing for precise autonomous
+              sequences powered by machine learning.
+            </p>
+          </div>
+        </div>
+        <div className="w-screen h-screen flex justify-center items-center text-align-right">
+          <div className="w-1/2 text-align-left ml-[50%]">
+            <h2
+              className="text-align-left text-2xl md:text-6xl font-bold text-white z-10 mr-[5%] mb-2"
+              style={{ textAlign: "right" }}
+            >
+              Scoring
+            </h2>
+            <p
+              className="text-align-left text-lg md:text-2xl text-white z-10 mr-[5%]"
+              style={{ textAlign: "right" }}
+            >
+              Our robot has everything it needs to score points, from an
+              intelligent auto-aligned coral scoring system that can score at
+              all levels of the reef to the ability to score algae into the
+              processor, our robot is flexible and powerful.
+            </p>
+          </div>
+        </div>
+        <h2 className="text-2xl text-white z-10 mt-8" id="about">
+          Here&apos;s a bit about us:
+        </h2>
+        <div className="w-screen py-16 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
           <Box
-            title="About"
+            title="About Us"
             description="This is the about section."
             color="#56B97F"
             num={1}
+            extendedDescription="This is the extended description for the about section."
+            image="/PWRUP_icon.svg"
           />
           <Box
             title="Team"
             description="Meet our talented team members."
             color="#3478C6"
             num={2}
+            extendedDescription="This is the extended description for the team section. It can be very long.\n\nThis is a new line."
+            image="/PWRUP_icon.svg"
           />
           <Box
             title="Sponsors"
             description="Learn about our amazing sponsors."
             color="#F2994A"
             num={3}
+            extendedDescription="This is the extended description for the sponsors section."
+            image="/PWRUP_icon.svg"
           />
         </div>
-        {/* <div className="w-screen h-screen flex flex-col justify-center items-center">
-          <h2></h2>
-        </div> */}
       </div>
     </main>
   );

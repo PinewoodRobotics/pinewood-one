@@ -7,45 +7,61 @@ import { MeshStandardMaterial, Mesh } from "three";
 
 function Model({
   url,
-  scrollProgress = 0,
+  scrollProgress = 0, // Keep this parameter
   keyframeValues,
+  onLoaded,
 }: {
   url: string;
   scrollProgress?: number;
   keyframeValues?: number[];
+  onLoaded?: () => void;
 }) {
   const meshRef = useRef<Mesh>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Initial values from the first keyframe in page.tsx
+  const initialPosition = [0, -2, 0] as [number, number, number]; // Type assertion
+  const initialRotation = [-Math.PI / 2, 0, Math.PI / 2 - 0.7] as [
+    number,
+    number,
+    number
+  ]; // Type assertion
+
+  // Start with a small scale and animate to full size
   const [scale, setScale] = useState(0.01);
-  const [rotation, setRotation] = useState(0);
+  const targetScale = 3;
+
+  // Animation state
   const animationComplete = useRef(false);
   const animationProgress = useRef(0);
-  const finalAnimationRotation = useRef(0);
+  const animationDuration = 90; // frames
 
-  // Get initial position from first keyframe if available
-  const initialPosition =
-    keyframeValues && keyframeValues.length >= 3
-      ? [keyframeValues[0], keyframeValues[1], keyframeValues[2]]
-      : [0, -0.5, 0];
-
-  // Animation constants
-  const targetScale = 3;
-  const targetRotation = Math.PI * 2; // 360 degrees
-  const animationDuration = 120; // frames
+  // Initial rotation value for animation
+  const initialYRotation = useRef(0);
 
   const geometry = useLoader(STLLoader, url);
 
   useEffect(() => {
     console.log("STL geometry loaded successfully");
     setIsLoaded(true);
-  }, [geometry]);
+    if (onLoaded) {
+      onLoaded();
+    }
 
-  // Easing function (ease-out cubic)
+    // Log scrollProgress to prevent unused variable warning
+    if (scrollProgress !== undefined) {
+      console.log("Model initialized with scrollProgress:", scrollProgress);
+    }
+  }, [geometry, onLoaded, scrollProgress]);
+
+  // Easing function
   const easeOutCubic = (t: number): number => {
     return 1 - Math.pow(1 - t, 3);
   };
 
   useFrame(() => {
+    if (!meshRef.current) return;
+
     if (isLoaded && !animationComplete.current) {
       // Update animation progress
       animationProgress.current = Math.min(
@@ -59,15 +75,41 @@ function Model({
       // Update scale with easing
       setScale(0.01 + (targetScale - 0.01) * easedProgress);
 
-      // Update rotation with easing
-      const currentRotation = targetRotation * easedProgress;
-      setRotation(currentRotation);
+      // Add a 360° rotation on Y axis during the opening animation
+      const rotationAmount = Math.PI * 2 * easedProgress; // 0 to 2π (360°)
+      initialYRotation.current = rotationAmount;
 
-      // Store the final rotation when animation completes
+      // Apply the opening animation rotation
+      meshRef.current.rotation.set(
+        initialRotation[0],
+        initialRotation[1],
+        initialRotation[2] + rotationAmount
+      );
+
+      // Mark animation as complete when done
       if (animationProgress.current >= 1) {
-        finalAnimationRotation.current = currentRotation;
         animationComplete.current = true;
       }
+    } else if (
+      animationComplete.current &&
+      keyframeValues &&
+      keyframeValues.length >= 6
+    ) {
+      // After opening animation is complete, apply scroll-based keyframe values
+
+      // Position
+      meshRef.current.position.set(
+        keyframeValues[0],
+        keyframeValues[1],
+        keyframeValues[2]
+      );
+
+      // Rotation (maintain the -Math.PI/2 base rotation on X axis)
+      meshRef.current.rotation.set(
+        -Math.PI / 2 + keyframeValues[3],
+        keyframeValues[4],
+        keyframeValues[5]
+      );
     }
   });
 
@@ -79,50 +121,13 @@ function Model({
     flatShading: false,
   });
 
-  // Calculate model position based on keyframe values
-  let modelPosition: [number, number, number] = initialPosition as [
-    number,
-    number,
-    number
-  ];
-
-  // Initialize model rotation
-  let modelRotation: [number, number, number] = [-Math.PI / 2, 0, rotation];
-
-  // After animation completes, use keyframe values for position and rotation if available
-  if (
-    animationComplete.current &&
-    keyframeValues &&
-    keyframeValues.length >= 6
-  ) {
-    // Use keyframe values directly for position
-    modelPosition = [
-      keyframeValues[0],
-      keyframeValues[1],
-      keyframeValues[2],
-    ] as [number, number, number];
-
-    modelRotation = [
-      -Math.PI / 2 + keyframeValues[3],
-      keyframeValues[4],
-      finalAnimationRotation.current + keyframeValues[5],
-    ] as [number, number, number];
-  } else if (animationComplete.current) {
-    // Use scroll-based rotation only
-    modelRotation = [
-      -Math.PI / 2,
-      0,
-      finalAnimationRotation.current + scrollProgress * Math.PI,
-    ] as [number, number, number];
-  }
-
   return (
     <mesh
       ref={meshRef}
       geometry={geometry}
       material={material}
-      rotation={modelRotation}
-      position={modelPosition}
+      rotation={initialRotation}
+      position={initialPosition}
       scale={scale}
       castShadow
       receiveShadow
@@ -136,21 +141,32 @@ interface ModelViewerProps {
   cameraDistance?: number;
   scrollProgress?: number;
   keyframeValues?: number[];
+  onLoaded?: () => void;
 }
 
 export default function ModelViewer({
   modelUrl,
-  cameraPosition = [-20, 3, 10],
+  cameraPosition = [0, 0, 10], // Move camera back on Z axis
   cameraDistance = 3,
   scrollProgress = 0,
   keyframeValues,
+  onLoaded,
 }: ModelViewerProps) {
+  // Add a state to track camera position
+  const [effectiveCameraPos, setEffectiveCameraPos] = useState(cameraPosition);
+
+  // Use effect to update camera position when props change
+  useEffect(() => {
+    console.log("Camera position set to:", cameraPosition);
+    setEffectiveCameraPos(cameraPosition);
+  }, [cameraPosition]);
+
   return (
     <Canvas shadows>
-      {/* Fixed camera position */}
+      {/* Fixed camera position with logged values */}
       <PerspectiveCamera
         makeDefault
-        position={cameraPosition}
+        position={effectiveCameraPos}
         fov={40}
         zoom={cameraDistance}
       />
@@ -172,6 +188,7 @@ export default function ModelViewer({
           url={modelUrl}
           scrollProgress={scrollProgress}
           keyframeValues={keyframeValues}
+          onLoaded={onLoaded}
         />
       </Suspense>
 
