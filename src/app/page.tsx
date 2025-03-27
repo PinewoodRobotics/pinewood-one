@@ -1,7 +1,7 @@
 "use client";
 import ModelViewer from "@/components/ModelViewer";
 import Navbar from "@/components/Navbar";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Lenis from "@studio-freight/lenis";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -95,10 +95,16 @@ export default function Home() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [keyframeValues, setKeyframeValues] = useState<number[]>([]);
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [loadingPercentage, setLoadingPercentage] = useState(0);
+  const loadingInterval = useRef<NodeJS.Timeout | null>(null);
+  const dotsInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Function to handle model load completion
   const handleModelLoaded = () => {
     setModelLoaded(true);
+    // Set to 100% when loaded
+    setLoadingPercentage(100);
+
     // Remove loading screen when model is loaded
     const loadingElement = document.getElementById("loading");
     if (loadingElement) {
@@ -106,8 +112,52 @@ export default function Home() {
       setTimeout(() => {
         loadingElement.style.display = "none";
       }, 500);
+
+      // Clear intervals
+      if (loadingInterval.current) clearInterval(loadingInterval.current);
+      if (dotsInterval.current) clearInterval(dotsInterval.current);
     }
   };
+
+  // Loading animation
+  useEffect(() => {
+    // Animate loading dots
+    dotsInterval.current = setInterval(() => {
+      const loadingDots = document.getElementById("loadingDots");
+      if (loadingDots) {
+        if (loadingDots.textContent === "...") loadingDots.textContent = "";
+        else if (loadingDots.textContent === "") loadingDots.textContent = ".";
+        else if (loadingDots.textContent === ".")
+          loadingDots.textContent = "..";
+        else if (loadingDots.textContent === "..")
+          loadingDots.textContent = "...";
+      }
+    }, 100);
+
+    // Simulate loading progress
+    loadingInterval.current = setInterval(() => {
+      setLoadingPercentage((prev) => {
+        // Slow down as we approach 90%
+        if (prev < 90) {
+          return Math.min(prev + Math.random() * 10, 90);
+        }
+        return prev;
+      });
+    }, 200);
+
+    return () => {
+      if (loadingInterval.current) clearInterval(loadingInterval.current);
+      if (dotsInterval.current) clearInterval(dotsInterval.current);
+    };
+  }, []);
+
+  // Update the percentage display
+  useEffect(() => {
+    const percentElement = document.getElementById("percentLoadedValue");
+    if (percentElement) {
+      percentElement.textContent = Math.floor(loadingPercentage).toString();
+    }
+  }, [loadingPercentage]);
 
   // Initialize smooth scrolling with Lenis
   useEffect(() => {
@@ -183,7 +233,18 @@ export default function Home() {
         <p className="text-4xl text-[#70cd35] font-bold">
           Loading<span id="loadingDots">...</span>
         </p>
-        <p className="text-2xl text-white" id="percentLoaded">
+
+        {/* Loading bar container */}
+        <div className="w-64 h-4 bg-gray-800 rounded-full overflow-hidden">
+          {/* Loading bar fill - width controlled by percentage */}
+          <div
+            id="loadingBarFill"
+            className="h-full bg-[#70cd35] transition-all duration-200 ease-out"
+            style={{ width: `${loadingPercentage}%` }}
+          ></div>
+        </div>
+
+        <p className="text-2xl text-white mt-2" id="percentLoaded">
           <span id="percentLoadedValue">0</span>% loaded
         </p>
       </div>
