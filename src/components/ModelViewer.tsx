@@ -7,7 +7,7 @@ import { MeshStandardMaterial, Mesh } from "three";
 
 function Model({
   url,
-  scrollProgress = 0, // Keep this parameter
+  scrollProgress = 0,
   keyframeValues,
   onLoaded,
 }: {
@@ -162,43 +162,45 @@ export default function ModelViewer({
   }, [cameraPosition]);
 
   return (
-    <Canvas shadows>
-      {/* Fixed camera position with logged values */}
-      <PerspectiveCamera
-        makeDefault
-        position={effectiveCameraPos}
-        fov={40}
-        zoom={cameraDistance}
-      />
-
-      {/* Lights */}
-      <ambientLight intensity={0.3} />
-      <directionalLight
-        position={[5, 5, 5]}
-        intensity={1}
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
-      <directionalLight position={[-5, 3, -5]} intensity={0.5} />
-      <pointLight position={[0, 5, -5]} intensity={0.5} color="#ffffff" />
-
-      <Suspense fallback={null}>
-        <Model
-          url={modelUrl}
-          scrollProgress={scrollProgress}
-          keyframeValues={keyframeValues}
-          onLoaded={onLoaded}
+    <div className="relative w-full h-full">
+      <Canvas shadows>
+        {/* Fixed camera position with logged values */}
+        <PerspectiveCamera
+          makeDefault
+          position={effectiveCameraPos}
+          fov={40}
+          zoom={cameraDistance}
         />
-      </Suspense>
 
-      {/* Disable controls to prevent any interference */}
-      <OrbitControls
-        enableRotate={false}
-        enableZoom={false}
-        enablePan={false}
-        target={[0, 0, 0]}
-      />
-    </Canvas>
+        {/* Lights */}
+        <ambientLight intensity={0.3} />
+        <directionalLight
+          position={[5, 5, 5]}
+          intensity={1}
+          castShadow
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
+        />
+        <directionalLight position={[-5, 3, -5]} intensity={0.5} />
+        <pointLight position={[0, 5, -5]} intensity={0.5} color="#ffffff" />
+
+        <Suspense fallback={null}>
+          <Model
+            url={modelUrl}
+            scrollProgress={scrollProgress}
+            keyframeValues={keyframeValues}
+            onLoaded={onLoaded}
+          />
+        </Suspense>
+
+        {/* Disable controls to prevent any interference */}
+        <OrbitControls
+          enableRotate={false}
+          enableZoom={false}
+          enablePan={false}
+          target={[0, 0, 0]}
+        />
+      </Canvas>
+    </div>
   );
 }

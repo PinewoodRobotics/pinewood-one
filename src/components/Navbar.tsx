@@ -319,10 +319,10 @@ export default function Navbar() {
               WebkitBackdropFilter: "blur(8px)",
             }}
           >
-            <div className="flex flex-col space-y-1 items-end">
+            <div className="flex flex-col space-y-3 items-end">
               <motion.a
                 href="#features"
-                className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                className="block py-2 hover:text-[#70cd35] transition-colors text-right text-xl font-medium"
                 onClick={(e) => {
                   e.preventDefault();
                   console.log("Mobile Features clicked");
@@ -339,7 +339,7 @@ export default function Navbar() {
               </motion.a>
               <motion.a
                 href="#about"
-                className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                className="block py-2 hover:text-[#70cd35] transition-colors text-right text-xl font-medium"
                 onClick={(e) => {
                   e.preventDefault();
                   console.log("Mobile About clicked");
@@ -357,14 +357,14 @@ export default function Navbar() {
             </div>
 
             {/* External Links Section */}
-            <div className="mt-3 pt-2 border-t border-gray-700 w-full">
-              <h3 className="text-[#70cd35] mb-1 font-bold text-lg text-right">
+            <div className="mt-4 pt-3 border-t border-gray-700 w-full">
+              <h3 className="text-[#70cd35] my-4 font-bold text-3xl text-right">
                 Links
               </h3>
-              <div className="flex flex-col space-y-1 items-end">
+              <div className="flex flex-col space-y-3 items-end">
                 <motion.a
                   href="https://github.com/pinewoodrobotics"
-                  className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                  className="block py-2 hover:text-[#70cd35] transition-colors text-right text-xl font-medium"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ x: -10 }}
@@ -377,7 +377,7 @@ export default function Navbar() {
                 </motion.a>
                 <motion.a
                   href="https://www.thebluealliance.com/team/4765"
-                  className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                  className="block py-2 hover:text-[#70cd35] transition-colors text-right text-xl font-medium"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ x: -10 }}
@@ -390,7 +390,7 @@ export default function Navbar() {
                 </motion.a>
                 <motion.a
                   href="https://www.youtube.com/@pinewoodrobotics"
-                  className="block py-1 hover:text-[#70cd35] transition-colors text-right"
+                  className="block py-2 hover:text-[#70cd35] transition-colors text-right text-xl font-medium"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ x: -10 }}

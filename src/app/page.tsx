@@ -7,6 +7,36 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import Box from "@/components/Box";
 
+// Add this component at the top of your file, before the Home component
+function ARButton() {
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    // Check if user is on iOS
+    const checkIOS = () => {
+      const ua = window.navigator.userAgent;
+      const iOS = !!ua.match(/iPad/i) || !!ua.match(/iPhone/i);
+      const webkit = !!ua.match(/WebKit/i);
+      setIsIOS(iOS && webkit && !ua.match(/CriOS/i));
+    };
+
+    checkIOS();
+  }, []);
+
+  if (!isIOS) return null;
+
+  return (
+    <a
+      className="bg-[#70cd35] hover:bg-[#5fb82e] text-white font-bold py-3 px-8 rounded-full 
+                shadow-lg transition-colors duration-300 cursor-pointer flex items-center"
+      rel="ar"
+      href="https://ar.pinewood.one/robot.usdz"
+    >
+      View our robot in AR
+    </a>
+  );
+}
+
 // Define keyframes for scroll-based animation
 // Format: [positionX, positionY, positionZ, rotationX, rotationY, rotationZ]
 type KeyframeValues = [number, number, number, number, number, number];
@@ -373,6 +403,9 @@ export default function Home() {
             image="/PWRUP_icon.svg"
           />
         </div>
+      </div>
+      <div className="fixed bottom-8 left-0 right-0 flex justify-center z-20">
+        <ARButton />
       </div>
     </main>
   );
