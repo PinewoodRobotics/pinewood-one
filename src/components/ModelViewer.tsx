@@ -1,9 +1,8 @@
 "use client";
-import { Canvas, useLoader, useFrame } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { STLLoader } from "three/addons/loaders/STLLoader.js";
-import { MeshStandardMaterial, Mesh } from "three";
+import { Group, Object3D, Mesh } from "three";
 
 function Model({
   url,
@@ -16,12 +15,12 @@ function Model({
   keyframeValues?: number[];
   onLoaded?: () => void;
 }) {
-  const meshRef = useRef<Mesh>(null);
+  const groupRef = useRef<Group>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Initial values from the first keyframe in page.tsx
   const initialPosition = [0, -2, 0] as [number, number, number]; // Type assertion
-  const initialRotation = [-Math.PI / 2, 0, Math.PI / 2 - 0.7] as [
+  const initialRotation = [-Math.PI / 2 + 0.3, 0, Math.PI * 0.75] as [
     number,
     number,
     number
@@ -39,20 +38,29 @@ function Model({
   // Initial rotation value for animation
   const initialYRotation = useRef(0);
 
-  const geometry = useLoader(STLLoader, url);
+  // Load GLTF model
+  const { scene } = useGLTF(url);
+
+  // Track if we've already called onLoaded
+  const loadedCallbackFired = useRef(false);
 
   useEffect(() => {
-    console.log("STL geometry loaded successfully");
-    setIsLoaded(true);
-    if (onLoaded) {
-      onLoaded();
-    }
+    if (scene && !loadedCallbackFired.current) {
+      console.log("GLB model loaded successfully");
+      setIsLoaded(true);
 
-    // Log scrollProgress to prevent unused variable warning
-    if (scrollProgress !== undefined) {
-      console.log("Model initialized with scrollProgress:", scrollProgress);
+      // Only call onLoaded once
+      if (onLoaded && !loadedCallbackFired.current) {
+        onLoaded();
+        loadedCallbackFired.current = true;
+      }
+
+      // Log scrollProgress to prevent unused variable warning
+      if (scrollProgress !== undefined) {
+        console.log("Model initialized with scrollProgress:", scrollProgress);
+      }
     }
-  }, [geometry, onLoaded, scrollProgress]);
+  }, [scene, onLoaded, scrollProgress]);
 
   // Easing function
   const easeOutCubic = (t: number): number => {
@@ -60,7 +68,7 @@ function Model({
   };
 
   useFrame(() => {
-    if (!meshRef.current) return;
+    if (!groupRef.current) return;
 
     if (isLoaded && !animationComplete.current) {
       // Update animation progress
@@ -80,7 +88,7 @@ function Model({
       initialYRotation.current = rotationAmount;
 
       // Apply the opening animation rotation
-      meshRef.current.rotation.set(
+      groupRef.current.rotation.set(
         initialRotation[0],
         initialRotation[1],
         initialRotation[2] + rotationAmount
@@ -98,14 +106,14 @@ function Model({
       // After opening animation is complete, apply scroll-based keyframe values
 
       // Position
-      meshRef.current.position.set(
+      groupRef.current.position.set(
         keyframeValues[0],
         keyframeValues[1],
         keyframeValues[2]
       );
 
       // Rotation (maintain the -Math.PI/2 base rotation on X axis)
-      meshRef.current.rotation.set(
+      groupRef.current.rotation.set(
         -Math.PI / 2 + keyframeValues[3],
         keyframeValues[4],
         keyframeValues[5]
@@ -113,25 +121,29 @@ function Model({
     }
   });
 
-  const material = new MeshStandardMaterial({
-    color: 0xffffff,
-    roughness: 0.5,
-    metalness: 0.3,
-    emissive: 0x111111,
-    flatShading: false,
-  });
+  // Apply material to all meshes in the scene
+  useEffect(() => {
+    if (scene) {
+      scene.traverse((child: Object3D) => {
+        if (child instanceof Mesh) {
+          // Preserve original materials instead of replacing them
+          // Just add shadow properties
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+    }
+  }, [scene]);
 
   return (
-    <mesh
-      ref={meshRef}
-      geometry={geometry}
-      material={material}
+    <group
+      ref={groupRef}
       rotation={initialRotation}
       position={initialPosition}
       scale={scale}
-      castShadow
-      receiveShadow
-    />
+    >
+      <primitive object={scene} />
+    </group>
   );
 }
 
@@ -173,7 +185,7 @@ export default function ModelViewer({
         />
 
         {/* Lights */}
-        <ambientLight intensity={0.3} />
+        <ambientLight intensity={1} />
         <directionalLight
           position={[5, 5, 5]}
           intensity={1}

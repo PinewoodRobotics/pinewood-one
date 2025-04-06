@@ -51,19 +51,11 @@ type KeyframeWithEasing = {
 // Updated keyframes structure with easing options
 const scrollKeyFrames: Record<number, KeyframeWithEasing> = {
   0: {
-    values: [0, -2, 0, 0, 0, Math.PI / 2 - 0.7],
+    values: [0, -2, 0, 0.3, 0, Math.PI * 0.75],
     easing: "linear",
   },
-  0.385: {
-    values: [1.3, -0.4, 30, 0.3, 0, Math.PI * 0.25 + 0.6],
-    easing: "easeInOut",
-  },
-  0.74: {
-    values: [0, -1, 20, 0.5, 0, Math.PI / 2 + 0.3],
-    easing: "easeInOut",
-  },
   1: {
-    values: [0, -2, 0, 0, 0, Math.PI / 2 - 0.7],
+    values: [0, -2, 0, 0, 0, Math.PI * 0.75],
     easing: "easeOut",
   },
 };
@@ -264,26 +256,37 @@ export default function Home() {
         <p className="text-4xl text-[#70cd35] font-bold">
           Loading<span id="loadingDots">...</span>
         </p>
-
         {/* Loading bar container */}
         <div className="w-64 h-4 bg-gray-800 rounded-full overflow-hidden">
-          {/* Loading bar fill - width controlled by percentage */}
+          {/* // Loading bar fill - width controlled by percentage */}
           <div
             id="loadingBarFill"
             className="h-full bg-[#70cd35] transition-all duration-200 ease-out"
             style={{ width: `${loadingPercentage}%` }}
           ></div>
         </div>
-
         <p className="text-2xl text-white mt-2" id="percentLoaded">
           <span id="percentLoadedValue">0</span>% loaded
+        </p>
+        <p className="text-sm text-white mt-4 opacity-50">
+          This could take a while, especially on slow connections.
+        </p>
+        <p className="text-xs text-white mt-4 opacity-50">
+          Alternatively, skip loading the 3D model for a degraded experience but
+          faster load time:{" "}
+          <a
+            className="underline cursor-pointer"
+            onClick={() => handleModelLoaded()}
+          >
+            Skip
+          </a>
         </p>
       </div>
 
       {/* Fixed background - stays in place regardless of scroll */}
       <div className="fixed inset-0 z-0">
         <ModelViewer
-          modelUrl="https://cdn.hack.ngo/slackcdn/49b45bdf52354530217dcaf19ae77b06.stl"
+          modelUrl="https://cdn.pinewood.one/memo-1.glb"
           cameraPosition={[0, 0, 40]} // Move camera back to z=10
           cameraDistance={5} // Increased from 2.5 to 5 to make the model appear smaller/further away
           scrollProgress={scrollProgress}
@@ -328,15 +331,33 @@ export default function Home() {
             />
           </motion.div>
         </div>
+        <span className="-mt-8">
+          <motion.p
+            className="text-xl text-white z-10 opacity-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            transition={{ duration: 0.5, delay: 5 }}
+          >
+            Scroll to learn more...
+          </motion.p>
+        </span>
         <h1 className="text-4xl font-bold text-white z-10">
           We are <span className="text-[#70cd35]">PWRUP</span> from{" "}
-          <a href="https://pinewood.edu/" className="text-[#70cd35]">
+          <a
+            href="https://pinewood.edu/"
+            className="text-[#70cd35] underline hover:text-[#5fb82e]"
+          >
             Pinewood School
           </a>{" "}
           in Los Altos, California.
         </h1>
+        <div className="h-screen">
+          <p>This</p>
+          <p>is</p>
+          <p>Memo</p>
+        </div>
         <h2 className="text-2xl text-white z-10 mt-8" id="features">
-          Here&apos;s a quick overview of the features of our robot:
+          Here&apos;s what Meemo can do!
         </h2>
         <div className="w-screen h-screen flex justify-center items-center text-align-left">
           <div className="w-1/2 text-align-left mr-[50%]">
@@ -344,15 +365,14 @@ export default function Home() {
               className="text-align-left text-2xl md:text-6xl font-bold text-white z-10 ml-[5%] mb-2"
               style={{ textAlign: "left" }}
             >
-              Vision Subsystem
+              Coral Manipulation
             </h2>
             <p
               className="text-align-left text-lg md:text-2xl text-white z-10 ml-[5%]"
               style={{ textAlign: "left" }}
             >
-              With 4 cameras and LiDAR, our robot is fully equipped with
-              high-tech vision capabilities, allowing for precise autonomous
-              sequences powered by machine learning.
+              Memo receives coral from the coral station and can score on reef
+              levels 2, 3, and 4.
             </p>
           </div>
         </div>

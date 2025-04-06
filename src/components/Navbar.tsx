@@ -13,6 +13,8 @@ export default function Navbar() {
 
   // Use a ref to track if we're in the process of scrolling
   const isScrollingRef = useRef(false);
+  // Use a ref to track the current scroll position
+  const scrollPositionRef = useRef(0);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -38,7 +40,14 @@ export default function Navbar() {
     };
 
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      // Only update state if the scrolled status would change
+      const isCurrentlyScrolled = window.scrollY > 20;
+      if (isCurrentlyScrolled !== scrolled) {
+        setScrolled(isCurrentlyScrolled);
+      }
+
+      // Store current scroll position
+      scrollPositionRef.current = window.scrollY;
 
       // Update scroll percentage for debug display
       const scrollElement = document.getElementById("scrollPercentage");
@@ -53,18 +62,24 @@ export default function Navbar() {
       }
     };
 
+    // Initial checks
     checkMobile();
+
+    // Only set initial scroll state once
+    const initialScrolled = window.scrollY > 20;
+    if (scrolled !== initialScrolled) {
+      setScrolled(initialScrolled);
+    }
+
+    // Add event listeners
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", checkMobile);
-
-    // Initial check
-    handleScroll();
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", checkMobile);
     };
-  }, []); // Empty dependency array to run only once on mount
+  }, [scrolled]); // Add scrolled as a dependency
 
   // Function to handle smooth scrolling
   const handleSmoothScroll = (id: string) => {
@@ -133,10 +148,9 @@ export default function Navbar() {
     <motion.nav
       className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300`}
       style={{
-        backdropFilter:
-          scrolled || (isMobile && isMenuOpen) ? "blur(8px)" : "blur(0px)",
+        backdropFilter: isMobile && isMenuOpen ? "blur(8px)" : "blur(0px)",
         WebkitBackdropFilter:
-          scrolled || (isMobile && isMenuOpen) ? "blur(8px)" : "blur(0px)",
+          isMobile && isMenuOpen ? "blur(8px)" : "blur(0px)",
         transition:
           "backdrop-filter 0.2s ease-in-out, -webkit-backdrop-filter 0.2s ease-in-out",
       }}
