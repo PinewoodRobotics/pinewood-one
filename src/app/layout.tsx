@@ -3,9 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PWRUP 4765",
+  title: "Meet Memo - PWRUP 4765",
   description:
-    "We are FRC team 4765: PWRUP from Pinewood School in Los Altos, CA.",
+    "We are FRC team 4765, PWRUP, from Pinewood School in Los Altos, California. Meet Memo, our robot for the 2025 Reefscape FRC game, and explore its capabilities on the field.",
 };
 
 const inter = Inter({ subsets: ["latin"] });

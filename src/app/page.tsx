@@ -31,7 +31,7 @@ function ARButton() {
         __html: `<a rel="ar" href="https://ar.pinewood.one/memo-1.usdz"
           class="bg-[#70cd35] hover:bg-[#5fb82e] text-white font-bold py-3 px-8 rounded-full 
                 shadow-lg transition-colors duration-300 cursor-pointer flex items-center">
-          View our robot in AR
+          View our robot in AR (experimental)
         </a>`,
       }}
     />
@@ -51,11 +51,23 @@ type KeyframeWithEasing = {
 // Updated keyframes structure with easing options
 const scrollKeyFrames: Record<number, KeyframeWithEasing> = {
   0: {
-    values: [0, -2, 0, 0.3, 0, Math.PI * 0.75],
+    values: [0, -2, 10, 0.3, 0, Math.PI * 0.75],
     easing: "linear",
   },
+  0.12: {
+    values: [0, 2, 10, 0, 0, Math.PI * 0.75],
+    easing: "easeIn",
+  },
+  0.25: {
+    values: [1.25, -1, 25, Math.PI * 0.25, 0, Math.PI * 0.7],
+    easing: "easeInOut",
+  },
+  0.49: {
+    values: [0, -2, 10, 0, 0, Math.PI * 0.75],
+    easing: "easeInOut",
+  },
   1: {
-    values: [0, -2, 0, 0, 0, Math.PI * 0.75],
+    values: [0, -2, 10, 0, 0, Math.PI * 0.75],
     easing: "easeOut",
   },
 };
@@ -185,7 +197,7 @@ export default function Home() {
   // Initialize smooth scrolling with Lenis
   useEffect(() => {
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 3,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: "vertical",
       gestureOrientation: "vertical",
@@ -331,14 +343,9 @@ export default function Home() {
             />
           </motion.div>
         </div>
-        <span className="-mt-8">
-          <motion.p
-            className="text-xl text-white z-10 opacity-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
-            transition={{ duration: 0.5, delay: 5 }}
-          >
-            Scroll to learn more...
+        <span className="-mt-16 mb-4">
+          <motion.p className="text-xl text-white z-10 opacity-50 hover-up-down">
+            <a href="#features">Scroll down to learn more...</a>
           </motion.p>
         </span>
         <h1 className="text-4xl font-bold text-white z-10">
@@ -351,16 +358,11 @@ export default function Home() {
           </a>{" "}
           in Los Altos, California.
         </h1>
-        <div className="h-screen">
-          <p>This</p>
-          <p>is</p>
-          <p>Memo</p>
-        </div>
         <h2 className="text-2xl text-white z-10 mt-8" id="features">
-          Here&apos;s what Meemo can do!
+          Keep scrolling to explore Memo&apos;s extensive capabilities!
         </h2>
         <div className="w-screen h-screen flex justify-center items-center text-align-left">
-          <div className="w-1/2 text-align-left mr-[50%]">
+          <div className="w-[40%] text-align-left mr-[60%]">
             <h2
               className="text-align-left text-2xl md:text-6xl font-bold text-white z-10 ml-[5%] mb-2"
               style={{ textAlign: "left" }}
@@ -377,52 +379,71 @@ export default function Home() {
           </div>
         </div>
         <div className="w-screen h-screen flex justify-center items-center text-align-right">
-          <div className="w-1/2 text-align-left ml-[50%]">
+          <div className="w-[40%] text-align-left ml-[60%]">
             <h2
               className="text-align-left text-2xl md:text-6xl font-bold text-white z-10 mr-[5%] mb-2"
               style={{ textAlign: "right" }}
             >
-              Scoring
+              Algae Removal
             </h2>
             <p
               className="text-align-left text-lg md:text-2xl text-white z-10 mr-[5%]"
               style={{ textAlign: "right" }}
             >
-              Our robot has everything it needs to score points, from an
-              intelligent auto-aligned coral scoring system that can score at
-              all levels of the reef to the ability to score algae into the
-              processor, our robot is flexible and powerful.
+              Memo can extract algae from all areas on the reef and score in the
+              processor.
             </p>
           </div>
         </div>
-        <h2 className="text-2xl text-white z-10 mt-8" id="about">
-          Here&apos;s a bit about us:
-        </h2>
-        <div className="w-screen py-16 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
-          <Box
-            title="About Us"
-            description="This is the about section."
-            color="#56B97F"
-            num={1}
-            extendedDescription="This is the extended description for the about section."
-            image="/PWRUP_icon.svg"
-          />
-          <Box
-            title="Team"
-            description="Meet our talented team members."
-            color="#3478C6"
-            num={2}
-            extendedDescription="This is the extended description for the team section. It can be very long.\n\nThis is a new line."
-            image="/PWRUP_icon.svg"
-          />
-          <Box
+        <div className="w-screen h-screen flex justify-center items-center text-align-left">
+          <div className="w-[40%] text-align-left mr-[60%]">
+            <h2
+              className="text-align-left text-2xl md:text-6xl font-bold text-white z-10 ml-[5%] mb-2"
+              style={{ textAlign: "left" }}
+            >
+              Auto Alignment
+            </h2>
+            <p
+              className="text-align-left text-lg md:text-2xl text-white z-10 ml-[5%]"
+              style={{ textAlign: "left" }}
+            >
+              Memo utilizes a 4 camera vision system to rapidly align with the
+              reef and score efficiently.
+            </p>
+          </div>
+        </div>
+        <div
+          className="h-screen align-center"
+          style={{ alignContent: "center" }}
+          id="about"
+        >
+          <h1 className="text-center text-4xl font-bold">
+            A bit more about Memo:
+          </h1>
+          <div className="w-screen py-16 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
+            <Box
+              title="Technical Specifications"
+              description="View more information on our robot"
+              color="#56B97F"
+              extendedDescription=""
+              image="/PWRUP_icon.svg"
+            />
+            <Box
+              title="About Us"
+              description="Learn more about our team"
+              color="#3478C6"
+              extendedDescription="We are FRC team 4765, PWRUP, from Pinewood School in Los Altos, California. Our team consists of ${num_people} members and ${num_mentors} mentors. We are a relatively new team, with our first year being ${first_year}."
+              image="/PWRUP_icon.svg"
+            />
+            {/* <Box
             title="Sponsors"
             description="Learn about our amazing sponsors."
             color="#F2994A"
             num={3}
             extendedDescription="This is the extended description for the sponsors section."
             image="/PWRUP_icon.svg"
-          />
+          /> */}
+          </div>
         </div>
       </div>
       <div className="fixed bottom-8 left-0 right-0 flex justify-center z-20">

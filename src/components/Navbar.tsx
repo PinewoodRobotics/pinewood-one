@@ -203,7 +203,7 @@ export default function Navbar() {
             {/* Links Dropdown */}
             <div className="relative" ref={linksDropdownRef}>
               <motion.button
-                className="flex items-center hover:text-[#70cd35] transition-colors"
+                className="flex items-center hover:text-[#70cd35] transition-colors cursor-pointer"
                 onClick={() => setIsLinksDropdownOpen(!isLinksDropdownOpen)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -229,17 +229,17 @@ export default function Navbar() {
                 </svg>
               </motion.button>
 
-              {/* // <motion.a
-              //   href="#"
-              //   className="hover:text-[#70cd35] transition-colors"
-              //   variants={linkVariants}
-              //   custom={3}
-              //   whileHover={{ scale: 1.1 }}
-              //   whileTap={{ scale: 0.95 }}
-              //   id="debug"
-              // >
-              //   Scrolled: <span id="scrollPercentage">0.000</span>/1
-              // </motion.a> */}
+              <motion.a
+                href="#"
+                className="hover:text-[#70cd35] transition-colors"
+                variants={linkVariants}
+                custom={3}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                id="debug"
+              >
+                Scrolled: <span id="scrollPercentage">0.000</span>/1
+              </motion.a>
 
               <AnimatePresence>
                 {isLinksDropdownOpen && (

@@ -169,18 +169,17 @@ export default function ModelViewer({
 
   // Use effect to update camera position when props change
   useEffect(() => {
-    console.log("Camera position set to:", cameraPosition);
     setEffectiveCameraPos(cameraPosition);
   }, [cameraPosition]);
 
   return (
     <div className="relative w-full h-full">
       <Canvas shadows>
-        {/* Fixed camera position with logged values */}
+        {/* Fixed camera position with updated FOV */}
         <PerspectiveCamera
           makeDefault
           position={effectiveCameraPos}
-          fov={40}
+          fov={60}
           zoom={cameraDistance}
         />
 
