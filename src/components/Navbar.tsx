@@ -229,7 +229,7 @@ export default function Navbar() {
                 </svg>
               </motion.button>
 
-              <motion.a
+              {/* <motion.a
                 href="#"
                 className="hover:text-[#70cd35] transition-colors"
                 variants={linkVariants}
@@ -239,7 +239,7 @@ export default function Navbar() {
                 id="debug"
               >
                 Scrolled: <span id="scrollPercentage">0.000</span>/1
-              </motion.a>
+              </motion.a> */}
 
               <AnimatePresence>
                 {isLinksDropdownOpen && (

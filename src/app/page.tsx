@@ -56,18 +56,22 @@ const scrollKeyFrames: Record<number, KeyframeWithEasing> = {
   },
   0.12: {
     values: [0, 2, 10, 0, 0, Math.PI * 0.75],
-    easing: "easeIn",
+    easing: "easeInOut",
   },
   0.25: {
-    values: [1.25, -1, 25, Math.PI * 0.25, 0, Math.PI * 0.7],
+    values: [1, -3, 25, Math.PI * -0.15, 0, Math.PI * 0.7],
     easing: "easeInOut",
   },
   0.49: {
-    values: [0, -2, 10, 0, 0, Math.PI * 0.75],
+    values: [1.25, -0.5, 25, Math.PI * 0.25, 0, Math.PI * 0.7],
+    easing: "easeInOut",
+  },
+  0.74: {
+    values: [0.2, 1, 32, Math.PI * 0.35, 0, Math.PI * 0.7],
     easing: "easeInOut",
   },
   1: {
-    values: [0, -2, 10, 0, 0, Math.PI * 0.75],
+    values: [0, -2, 10, 0, 0, Math.PI * 2.75],
     easing: "easeOut",
   },
 };
