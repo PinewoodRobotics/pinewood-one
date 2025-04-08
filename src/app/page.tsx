@@ -28,7 +28,7 @@ function ARButton() {
   return (
     <div
       dangerouslySetInnerHTML={{
-        __html: `<a rel="ar" href="https://ar.pinewood.one/memo-1.usdz"
+        __html: `<a rel="ar" href="https://ar.pinewood.one/memo-2.usdz"
           class="bg-[#70cd35] hover:bg-[#5fb82e] text-white font-bold py-3 px-8 rounded-full 
                 shadow-lg transition-colors duration-300 cursor-pointer flex items-center">
           View our robot in AR (experimental)
@@ -51,23 +51,23 @@ type KeyframeWithEasing = {
 // Updated keyframes structure with easing options
 const scrollKeyFrames: Record<number, KeyframeWithEasing> = {
   0: {
-    values: [0, -2, 10, 0.3, 0, Math.PI * 0.75],
-    easing: "linear",
+    values: [0, -2, 0, 0.3, 0, Math.PI * 0.75],
+    easing: "easeOut",
   },
   0.12: {
-    values: [0, 2, 10, 0, 0, Math.PI * 0.75],
+    values: [0, 2, 0, 0, 0, Math.PI * 0.75],
     easing: "easeInOut",
   },
   0.25: {
-    values: [1, -3, 25, Math.PI * -0.15, 0, Math.PI * 0.7],
+    values: [1, -3, 15, Math.PI * -0.15, 0, Math.PI * 0.7],
     easing: "easeInOut",
   },
   0.49: {
-    values: [1.25, -0.5, 25, Math.PI * 0.25, 0, Math.PI * 0.7],
+    values: [1.25, -0.5, 15, Math.PI * 0.25, 0, Math.PI * 0.7],
     easing: "easeInOut",
   },
   0.74: {
-    values: [0.2, 1, 32, Math.PI * 0.35, 0, Math.PI * 0.7],
+    values: [0.2, 1, 22, Math.PI * 0.35, 0, Math.PI * 0.7],
     easing: "easeInOut",
   },
   1: {
@@ -302,8 +302,8 @@ export default function Home() {
       {/* Fixed background - stays in place regardless of scroll */}
       <div className="fixed inset-0 z-0">
         <ModelViewer
-          modelUrl="https://cdn.pinewood.one/memo-1.glb"
-          cameraPosition={[0, 0, 40]} // Move camera back to z=10
+          modelUrl="https://cdn.pinewood.one/memo-2.glb"
+          cameraPosition={[0, 0, 30]} // Move camera back to z=10
           cameraDistance={5} // Increased from 2.5 to 5 to make the model appear smaller/further away
           scrollProgress={scrollProgress}
           keyframeValues={keyframeValues}

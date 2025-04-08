@@ -1,8 +1,9 @@
-"use client";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Group, Object3D, Mesh } from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
 function Model({
   url,
@@ -39,7 +40,10 @@ function Model({
   const initialYRotation = useRef(0);
 
   // Load GLTF model
-  const { scene } = useGLTF(url);
+  const gltf = useLoader(GLTFLoader, url, (loader) => {
+    loader.setMeshoptDecoder(MeshoptDecoder);
+  });
+  const { scene } = gltf;
 
   // Track if we've already called onLoaded
   const loadedCallbackFired = useRef(false);
