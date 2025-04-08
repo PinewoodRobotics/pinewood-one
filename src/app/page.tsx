@@ -302,7 +302,7 @@ export default function Home() {
       {/* Fixed background - stays in place regardless of scroll */}
       <div className="fixed inset-0 z-0">
         <ModelViewer
-          modelUrl="https://cdn.pinewood.one/memo-2.glb"
+          modelUrl="https://cdn.pinewood.one/memo-3.glb"
           cameraPosition={[0, 0, 30]} // Move camera back to z=10
           cameraDistance={5} // Increased from 2.5 to 5 to make the model appear smaller/further away
           scrollProgress={scrollProgress}
@@ -429,7 +429,34 @@ export default function Home() {
               title="Technical Specifications"
               description="View more information on our robot"
               color="#56B97F"
-              extendedDescription=""
+              extendedDescription={
+                <div className="iframe-container">
+                  <iframe
+                    src="/tech-specs.html"
+                    className="w-full border-0"
+                    title="Technical Specifications"
+                    onLoad={() => {
+                      // Adjust iframe height to match content
+                      const iframe = document.querySelector(
+                        'iframe[title="Technical Specifications"]'
+                      ) as HTMLIFrameElement;
+                      if (iframe) {
+                        iframe.style.height = "auto"; // Reset height
+                        try {
+                          const height =
+                            iframe.contentWindow?.document.body.scrollHeight;
+                          if (height) iframe.style.height = `${height + 10}px`;
+                        } catch (error) {
+                          console.error(
+                            "Could not adjust iframe height:",
+                            error
+                          );
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              }
               image="/PWRUP_icon.svg"
             />
             <Box

@@ -14,9 +14,11 @@
     "@studio-freight/lenis": "^1.0.42",
     "framer-motion": "^12.5.0",
     "lenis": "^1.2.3",
-    "next": "15.2.3",
+    "next": "^15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "simplebar": "^6.3.0",
+    "simplebar-react": "^3.3.0",
     "three": "^0.174.0"
   },
   "devDependencies": {

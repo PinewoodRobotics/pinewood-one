@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
@@ -8,7 +8,7 @@ interface BoxProps {
   title: string;
   description: string;
   color?: string;
-  extendedDescription?: string;
+  extendedDescription?: string | React.ReactNode;
   image?: string;
 }
 
@@ -20,6 +20,26 @@ export default function Box({
   image,
 }: BoxProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Add useEffect to handle body scrolling
+  useEffect(() => {
+    if (isModalOpen) {
+      // Disable scrolling on body when modal is open
+      document.body.style.overflow = "hidden";
+      // Add padding to prevent layout shift when scrollbar disappears
+      document.body.style.paddingRight = "var(--scrollbar-width, 6px)";
+    } else {
+      // Re-enable scrolling when modal is closed
+      document.body.style.overflow = "auto";
+      document.body.style.paddingRight = "0";
+    }
+
+    // Cleanup function to ensure scrolling is re-enabled when component unmounts
+    return () => {
+      document.body.style.overflow = "auto";
+      document.body.style.paddingRight = "0";
+    };
+  }, [isModalOpen]);
 
   return (
     <>
@@ -60,10 +80,12 @@ export default function Box({
               initial={{ y: 50 }}
               animate={{ y: 0 }}
               exit={{ y: 50 }}
-              className="relative bg-black/90 p-8 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+              className="relative bg-black/90 p-8 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto scrollbar-thin"
               style={{
                 minHeight: "400px",
                 border: `2px solid ${color}`,
+                scrollbarWidth: "thin",
+                scrollbarColor: `${color} transparent`,
               }}
             >
               <motion.button
@@ -104,11 +126,15 @@ export default function Box({
                 {title}
               </h2>
               <div className="text-lg text-gray-200">
-                <p
-                  dangerouslySetInnerHTML={{
-                    __html: extendedDescription,
-                  }}
-                ></p>
+                {typeof extendedDescription === "string" ? (
+                  <p
+                    dangerouslySetInnerHTML={{
+                      __html: extendedDescription,
+                    }}
+                  ></p>
+                ) : (
+                  extendedDescription
+                )}
               </div>
             </motion.div>
           </motion.div>
